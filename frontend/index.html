@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NiftyLens — Indian Market Intelligence</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<canvas id="starfield-canvas"></canvas>
+
+<div class="app-shell">
+    <nav class="sidebar">
+        <div class="sidebar-logo">NL</div>
+        <button class="nav-btn active" data-module="module-market" title="Market Pulse">📈</button>
+        <button class="nav-btn" data-module="module-technical" title="Technical Scanner">🔬</button>
+        <button class="nav-btn" data-module="module-earnings" title="Earnings Radar">📑</button>
+        <button class="nav-btn" data-module="module-sentiment" title="Sentiment Engine">📰</button>
+    </nav>
+    <nav class="bottom-nav">
+        <button class="nav-btn active" data-module="module-market">📈<span>Market</span></button>
+        <button class="nav-btn" data-module="module-technical">🔬<span>Scanner</span></button>
+        <button class="nav-btn" data-module="module-earnings">📑<span>Earnings</span></button>
+        <button class="nav-btn" data-module="module-sentiment">📰<span>Sentiment</span></button>
+    </nav>
+
+    <div class="main-content">
+        <div class="scan-bar">
+            <div class="scan-sweep"></div>
+            <span id="market-status">⏳ Loading...</span>
+            <span id="last-updated"></span>
+        </div>
+
+        <main class="main">
+
+        <div class="module-view active" id="module-market">
+        <section class="section">
+            <h2 class="section-title">⚡ Market Pulse</h2>
+            <div class="terrain-wrap">
+    <canvas id="market-terrain"></canvas>
+             <div class="terrain-label">LIVE MARKET TERRAIN — height = today's % change</div>
+             </div>
+
+            <div class="cards-row" id="summary-cards">
+                <div class="card">
+                    <div class="card-label">Stocks Tracked</div>
+                    <div class="card-value" id="stat-total">—</div>
+                </div>
+                <div class="card card-green">
+                    <div class="card-label">Advancing</div>
+                    <div class="card-value" id="stat-advancing">—</div>
+                </div>
+                <div class="card card-red">
+                    <div class="card-label">Declining</div>
+                    <div class="card-value" id="stat-declining">—</div>
+                </div>
+                <div class="card">
+                    <div class="card-label">Unchanged</div>
+                    <div class="card-value" id="stat-unchanged">—</div>
+                </div>
+            </div>
+
+            <div class="two-col">
+                <div class="panel">
+                    <h3 class="panel-title green">🚀 Top Gainers</h3>
+                    <div id="gainers-list" class="stock-list">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <h3 class="panel-title red">📉 Top Losers</h3>
+                    <div id="losers-list" class="stock-list">
+                        <div class="loading">Loading...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 class="panel-title">🗺️ Sector Performance</h3>
+                <div id="sector-heatmap" class="heatmap-grid">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 class="panel-title">📊 All Nifty50 Stocks</h3>
+                <div class="table-controls">
+                    <input
+                        type="text"
+                        id="search-input"
+                        class="search-box"
+                        placeholder="Search symbol or sector..."
+                    />
+                    <select id="sector-filter" class="sector-select">
+                        <option value="">All Sectors</option>
+                    </select>
+                </div>
+                <div class="table-wrap">
+                    <table class="stock-table" id="stock-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Sector</th>
+                                <th class="num">Price (₹)</th>
+                                <th class="num">Change</th>
+                                <th class="num">Change %</th>
+                                <th class="num">Prev Close</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stock-tbody">
+                            <tr>
+                                <td colspan="6" class="loading">
+                                    Fetching live data...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        </div>
+
+        <div class="module-view" id="module-technical">
+        <section class="section">
+            <h2 class="section-title">🔬 Technical Scanner</h2>
+
+            <div class="panel">
+                <div class="scanner-controls">
+                    <select id="scanner-filter" class="sector-select">
+                        <option value="">All Signals</option>
+                        <option value="Overbought">RSI Overbought</option>
+                        <option value="Oversold">RSI Oversold</option>
+                        <option value="Bullish Crossover">MACD Bullish</option>
+                        <option value="Bearish Crossover">MACD Bearish</option>
+                    </select>
+                    <button id="scan-btn" class="btn-primary">
+                        🔍 Run Scanner
+                    </button>
+                    <span id="scan-status" class="scan-status"></span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 class="panel-title">📋 Signal Scanner</h3>
+                <div class="table-wrap">
+                    <table class="stock-table" id="scanner-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th class="num">Price (₹)</th>
+                                <th class="num">RSI</th>
+                                <th>RSI Signal</th>
+                                <th>MACD Signal</th>
+                                <th>BB Signal</th>
+                                <th>Alerts</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scanner-tbody">
+                            <tr>
+                                <td colspan="7" class="loading">
+                                    Click "Run Scanner" to analyze all 50 stocks.
+                                    First run takes 2-3 minutes.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel" id="chart-panel" style="display:none">
+                <h3 class="panel-title" id="chart-title">Technical Chart</h3>
+                <div class="chart-tabs">
+                    <button class="tab-btn active" data-tab="rsi">RSI</button>
+                    <button class="tab-btn" data-tab="macd">MACD</button>
+                    <button class="tab-btn" data-tab="bollinger">Bollinger Bands</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="technical-chart"></canvas>
+                </div>
+            </div>
+        </section>
+        </div>
+
+        <div class="module-view" id="module-earnings">
+        <section class="section">
+            <h2 class="section-title">📑 Earnings Radar</h2>
+
+            <div class="panel">
+                <div class="scanner-controls">
+                    <button id="earnings-scan-btn" class="btn-primary">
+                        📊 Load Earnings Data
+                    </button>
+                    <span id="earnings-status" class="scan-status"></span>
+                </div>
+            </div>
+
+            <div class="two-col">
+                <div class="panel">
+                    <h3 class="panel-title green">🏆 Best Earnings Surprises</h3>
+                    <div id="earnings-best-list" class="stock-list">
+                        <div class="loading">Click "Load Earnings Data" above.</div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <h3 class="panel-title red">⚠️ Worst Earnings Surprises</h3>
+                    <div id="earnings-worst-list" class="stock-list">
+                        <div class="loading">Click "Load Earnings Data" above.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 class="panel-title">📋 All Quarterly Results</h3>
+                <p style="font-size:11px; color:var(--text-muted); margin-bottom:12px;">
+                    Note: extreme surprise % values can occur when analyst estimates
+                    are unusually low — treat very high percentages with caution.
+                </p>
+                <div class="table-wrap">
+                    <table class="stock-table" id="earnings-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Latest Result</th>
+                                <th class="num">Est. EPS</th>
+                                <th class="num">Actual EPS</th>
+                                <th class="num">Surprise %</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody id="earnings-tbody">
+                            <tr>
+                                <td colspan="6" class="loading">
+                                    Click "Load Earnings Data" above. Coverage is
+                                    partial — not every Nifty50 stock has usable data.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        </div>
+
+        <div class="module-view" id="module-sentiment">
+        <section class="section">
+            <h2 class="section-title">📰 Sentiment Engine</h2>
+
+            <div class="panel">
+                <div class="scanner-controls">
+                    <button id="sentiment-scan-btn" class="btn-primary">
+                        📰 Load News Sentiment
+                    </button>
+                    <span id="sentiment-status" class="scan-status"></span>
+                </div>
+                <p style="font-size:11px; color:var(--text-muted); margin-top:10px;">
+                    Note: sentiment scoring uses general-purpose language analysis,
+                    not finance-specific models. It can miss the bullish/bearish
+                    intent of analyst language (e.g. "Buy" vs "Reduce") and may
+                    score factual headlines as neutral even when they're significant.
+                    Treat scores as directional, not precise.
+                </p>
+            </div>
+
+            <div class="panel">
+                <h3 class="panel-title">📋 Stocks With Today's News</h3>
+                <div class="table-wrap">
+                    <table class="stock-table" id="sentiment-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th class="num">Headlines</th>
+                                <th class="num">Avg Sentiment</th>
+                                <th>Label</th>
+                                <th>Sample Headline</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sentiment-tbody">
+                            <tr>
+                                <td colspan="5" class="loading">
+                                    Click "Load News Sentiment" above. Coverage is
+                                    partial — most stocks have no news on any given day.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h3 class="panel-title">🔗 Sentiment-Price Correlation</h3>
+                <div class="scanner-controls">
+                    <input
+                        type="text"
+                        id="correlation-symbol-input"
+                        class="search-box"
+                        placeholder="Enter symbol e.g. RELIANCE"
+                        style="max-width:250px"
+                    />
+                    <button id="correlation-btn" class="btn-primary">
+                        Check Correlation
+                    </button>
+                </div>
+                <div id="correlation-result" style="margin-top:16px"></div>
+            </div>
+        </section>
+        </div>
+
+        </main>
+
+        <footer class="footer">
+            Data sourced from Yahoo Finance via yfinance. Cached every 15 minutes.
+            Not financial advice.
+        </footer>
+    </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
