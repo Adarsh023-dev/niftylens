@@ -3,7 +3,7 @@ uvicorn==0.29.0
 yfinance==0.2.54
 pandas==2.2.2
 numpy>=1.23.2
-ta==0.4.1
+ta
 vaderSentiment==3.3.2
 beautifulsoup4==4.12.3
 requests==2.31.0
